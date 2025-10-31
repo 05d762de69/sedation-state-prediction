@@ -1,0 +1,13 @@
+data/
+
+.DS_Store
+.vscode/
+
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# MATLAB
+*.asv
+*.m~
