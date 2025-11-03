@@ -7,9 +7,6 @@ Machine-learning pipeline for predicting sedation states (responsiveness in earl
 This project explores how network topology metrics extracted from EEG connectivity (dwPLI) relate to consciousness under propofol sedation. By leveraging graph-theoretical measures, we train machine-learning models to infer sedation states beyond descriptive analysis.
 This project reuses the open-access EEG dataset from [Chennu (2016)](https://doi.org/10.1371/journal.pcbi.1004669) and extends their graph-theoretical analysis of sedation-related connectivity changes using additional machine learning approaches.
 
-
-
-
 ## Data
 
 The dataset originates from [Chennu et al. (2016)](https://doi.org/10.1371/journal.pcbi.1004669), an open-access EEG study on propofol-induced changes in functional connectivity.  
@@ -24,7 +21,7 @@ Derived features (dwPLI matrices, graph metrics) are generated via scripts in `s
 3. **Graph Construction:** Adjacency matrices thresholded and metrics extracted (e.g. small-worldness, clustering, modularity).  
 4. **Model Training:** Machine learning classifiers trained to predict sedation responsiveness.  
 5. **Evaluation:** Performance assessed via cross-validation and feature importance analysis.
-![flowchart](<Screenshot 2025-11-04 at 09.38.39.png>)
+![flowchart](figures/pipeline.png)
 
 ## Citation
 
