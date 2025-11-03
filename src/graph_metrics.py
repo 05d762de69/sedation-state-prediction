@@ -1,3 +1,6 @@
+import numpy as np
+import networkx as nx
+
 def compute_graph_metrics(con_matrix, n_rand=10):
     #  Clean matrix 
     mat = np.nan_to_num(con_matrix, nan=0.0)

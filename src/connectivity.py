@@ -1,3 +1,7 @@
+import numpy as np
+import mne
+from mne_connectivity import spectral_connectivity_epochs
+
 def compute_dwpli(epochs, fmin, fmax):
     """
     Compute debiased weighted Phase Lag Index (dwPLI) for a given frequency band. 
