@@ -21,7 +21,10 @@ Derived features (dwPLI matrices, graph metrics) are generated via scripts in `s
 3. **Graph Construction:** Adjacency matrices thresholded and metrics extracted (e.g. small-worldness, clustering, modularity).  
 4. **Model Training:** Machine learning classifiers trained to predict sedation responsiveness.  
 5. **Evaluation:** Performance assessed via cross-validation and feature importance analysis.
-![flowchart](figures/pipeline.png)
+
+<p align="center">
+  <img src="figures/pipeline.png" alt="Pipeline flowchart" width="50%">
+</p>
 
 ## Citation
 
