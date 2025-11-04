@@ -8,7 +8,7 @@ def compute_dwpli(epochs, fmin, fmax):
     The result is averaged across epochs (as per MNE's implementation).
     """
     conn = spectral_connectivity_epochs(
-        data=epochs,                     
+        data=epochs.get_data(),                   
         method="wpli2_debiased",         # dwPLI
         mode="multitaper",               
         fmin=fmin,
