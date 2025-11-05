@@ -16,11 +16,54 @@ Derived features (dwPLI matrices, graph metrics) are generated via scripts in `s
 
 ## Methods
 
-1. **Preprocessing:** EEG data filtered and segmented into epochs (already provided by [Chennu et al. (2016)](https://doi.org/10.1371/journal.pcbi.1004669))  
-2. **Connectivity Analysis:** dwPLI computed for standard frequency bands.  
-3. **Graph Construction:** Adjacency matrices thresholded and metrics extracted (e.g. small-worldness, clustering, modularity).  
-4. **Model Training:** Machine learning classifiers trained to predict sedation responsiveness.  
-5. **Evaluation:** Performance assessed via cross-validation and feature importance analysis.
+1Methods Overview
+Feature Extraction
+
+EEG epochs were processed to compute connectivity using the debiased weighted Phase Lag Index (dwPLI) across five canonical frequency bands (δ = 1–4 Hz, θ = 4–8 Hz, α = 8–13 Hz, β = 13–30 Hz, γ = 30–45 Hz).
+For each subject × sedation level × band, the following graph-theoretical features were extracted from the weighted connectivity matrices:
+
+| Metric | Description |
+|---------|-------------|
+| **mean_degree** | Average node degree (mean connection strength). |
+| **clustering** | Weighted clustering coefficient (local interconnectedness). |
+| **path_length** | Mean shortest path between all node pairs (integration). |
+| **global_efficiency** | Inverse of average shortest path (global integration). |
+| **local_efficiency** | Efficiency within neighborhoods (segregation). |
+| **modularity (Q)** | Strength of community structure (Louvain algorithm). |
+| **participation_coefficient** | Extent of cross-module connectivity. |
+| **small_worldness** | Ratio of normalized clustering to normalized path length vs. random graphs. |
+
+
+Cross-band ratio computation
+For each subject and sedation level, ratios were calculated between EEG bands (θ/α, θ/β, α/β, δ/α) for every feature, e.g.:
+mean_degree_theta_alpha_ratio, clustering_alpha_beta_ratio, etc.
+→ Captures spectral redistribution of network topology across frequency bands.
+
+Within-subject Δ-normalization
+After computing ratios, all features (ratios and absolute metrics) were normalized per subject and per band relative to the subject’s baseline state:
+
+$\delta f = \frac{(f_{level} − f_{baseline})} / f_{baseline}$
+
+→ Removes inter-individual scale differences, isolating condition-specific changes.
+
+Normalization and Data Curation
+
+Δ-normalized features were concatenated with their baseline-independent ratio features.
+
+The “Recovery” state (SedationLevel = 4) was excluded due to its transitional nature.
+
+Final dataset: per-subject × sedation-level entries containing both normalized graph metrics and cross-band ratios.
+
+| Step | Description |
+|------|--------------|
+| **Target variable** | `SedationLevel` (1 = Baseline, 2 = Mild, 3 = Moderate) |
+| **Split strategy** | `GroupShuffleSplit` ensuring subjects are disjoint across train/test |
+| **Feature set** | Ratio features (`*_ratio`) + Δ-normalized metrics |
+| **Preprocessing** | Standard scaling and PCA (retain 95 % variance) |
+| **Model** | RandomForestClassifier (PCA → RF pipeline) |
+| **Hyperparameter tuning** | Group-aware GridSearchCV over `n_estimators`, `max_depth`, `max_features`, and `min_samples_leaf` |
+| **Best parameters** | `max_depth = 3`, `max_features = 0.4`, `min_samples_leaf = 5`, `n_estimators = 200` |
+| **Performance** | Group-CV accuracy ≈ 0.65 (chance ≈ 0.33) |
 
 <p align="center">
   <img src="figures/pipeline.png" alt="Pipeline flowchart" width="50%">
