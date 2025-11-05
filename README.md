@@ -42,7 +42,7 @@ mean_degree_theta_alpha_ratio, clustering_alpha_beta_ratio, etc.
 Within-subject Δ-normalization
 After computing ratios, all features (ratios and absolute metrics) were normalized per subject and per band relative to the subject’s baseline state:
 
-$\delta f = \frac{(f_{level} − f_{baseline})} / f_{baseline}$
+$\delta f = \frac{(f_{level} − f_{baseline})}{f_{baseline}}$
 
 → Removes inter-individual scale differences, isolating condition-specific changes.
 
