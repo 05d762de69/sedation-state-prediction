@@ -16,8 +16,7 @@ Derived features (dwPLI matrices, graph metrics) are generated via scripts in `s
 
 ## Methods
 
-1Methods Overview
-Feature Extraction
+### Feature Extraction
 
 EEG epochs were processed to compute connectivity using the debiased weighted Phase Lag Index (dwPLI) across five canonical frequency bands (δ = 1–4 Hz, θ = 4–8 Hz, α = 8–13 Hz, β = 13–30 Hz, γ = 30–45 Hz).
 For each subject × sedation level × band, the following graph-theoretical features were extracted from the weighted connectivity matrices:
@@ -33,6 +32,7 @@ For each subject × sedation level × band, the following graph-theoretical feat
 | **participation_coefficient** | Extent of cross-module connectivity. |
 | **small_worldness** | Ratio of normalized clustering to normalized path length vs. random graphs. |
 
+### Feature Transformation
 
 Cross-band ratio computation
 For each subject and sedation level, ratios were calculated between EEG bands (θ/α, θ/β, α/β, δ/α) for every feature, e.g.:
@@ -46,12 +46,10 @@ $\delta f = \frac{(f_{level} − f_{baseline})} / f_{baseline}$
 
 → Removes inter-individual scale differences, isolating condition-specific changes.
 
-Normalization and Data Curation
+### Normalization and Data Curation
 
 Δ-normalized features were concatenated with their baseline-independent ratio features.
-
 The “Recovery” state (SedationLevel = 4) was excluded due to its transitional nature.
-
 Final dataset: per-subject × sedation-level entries containing both normalized graph metrics and cross-band ratios.
 
 | Step | Description |
