@@ -1,6 +1,7 @@
 import pandas as pd
+import numpy as np
 
-def normalize_within_subject(df, feature_cols, baseline_label="Baseline"):
+def normalize_within_subject(df, baseline_label="Baseline", suffix="_delta"):
     """
     Compute within-subject, within-band normalization of graph metrics.
     Each feature is expressed as a relative change from the subject's baseline.
@@ -10,18 +11,23 @@ def normalize_within_subject(df, feature_cols, baseline_label="Baseline"):
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame with columns ['Subject', 'SedationLabel', 'Band', ...features...].
-    feature_cols : list
-        List of feature column names to normalize.
-    baseline_label : str
-        Label identifying the baseline condition (default: 'Baseline').
+        Must contain ['Subject', 'SedationLabel', 'Band', ...features...].
+    baseline_label : str, default='Baseline'
+        Label identifying the baseline condition.
+    suffix : str, default='_delta'
+        Suffix appended to normalized feature columns.
 
     Returns
     -------
     pd.DataFrame
-        Normalized DataFrame, same structure but with Δ-features.
+        DataFrame with normalized features and original identifiers.
     """
     df_norm = df.copy()
+    
+    # Automatically infer feature columns
+    exclude_cols = ["Subject", "SedationLabel", "SedationLevel", "Band"]
+    feature_cols = [c for c in df.columns if c not in exclude_cols]
+    
     norm_records = []
 
     for (subj, band), group in df.groupby(["Subject", "Band"]):
@@ -36,9 +42,9 @@ def normalize_within_subject(df, feature_cols, baseline_label="Baseline"):
             for col in feature_cols:
                 base_val = baseline_vals[col]
                 if base_val == 0 or pd.isna(base_val):
-                    new_row[col] = np.nan
+                    new_row[col + suffix] = np.nan
                 else:
-                    new_row[col] = (row[col] - base_val) / base_val
+                    new_row[col + suffix] = (row[col] - base_val) / base_val
             norm_records.append(new_row)
 
     return pd.DataFrame(norm_records)
