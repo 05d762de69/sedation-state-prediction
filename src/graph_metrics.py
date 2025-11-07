@@ -10,8 +10,8 @@ def compute_graph_metrics(con_matrix, n_rand=10):
     mat[mat < 0] = 0.0
     np.fill_diagonal(mat, 0)
 
-    # threshold = np.percentile(mat[mat > 0], 80)
-    # mat[mat < threshold] = 0
+    threshold = np.percentile(mat[mat > 0], 75)
+    mat[mat < threshold] = 0
 
     G = nx.from_numpy_array(mat)
 
