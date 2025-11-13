@@ -13,7 +13,7 @@ from tqdm import tqdm
 from graph_metrics import compute_graph_metrics_epochs 
 
 #  CONFIGURATION 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent
 CONNECTIVITY_DIR = PROJECT_ROOT / "data/data_derivatives/connectivity_matrices"
 MANIFEST_PATH = PROJECT_ROOT / "data/data_derivatives/manifests/manifest.csv"
 OUTPUT_PATH = PROJECT_ROOT / "data/data_derivatives/features_per_epoch.csv"
