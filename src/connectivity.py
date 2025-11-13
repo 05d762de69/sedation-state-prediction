@@ -26,7 +26,7 @@ def compute_dwpli(epochs, fmin, fmax):
     np.fill_diagonal(con_matrix, 0)      
     return con_matrix
 
-def compute_dwpli_per_epoch(epochs, fmin, fmax, n_cycles=7):
+def compute_wpli_per_epoch(epochs, fmin, fmax, n_cycles=7):
     """
     Compute dwPLI (via wPLI) for each epoch separately using spectral_connectivity_time.
     Returns array of shape (n_epochs, n_channels, n_channels).
@@ -37,35 +37,36 @@ def compute_dwpli_per_epoch(epochs, fmin, fmax, n_cycles=7):
     mne.set_config("MNE_CACHE_DIR", os.path.expanduser("~/Library/Caches/mne_cache"), set_env=True)
     os.environ["OMP_NUM_THREADS"] = "1"
 
-    # --- define frequency range ---
-    freqs = np.linspace(fmin, fmax, num=5)
     sfreq = epochs.info["sfreq"]
 
-    # --- compute per-epoch connectivity (vectorized, no averaging) ---
+    # --- define frequency range explicitly for this band ---
+    freqs = np.linspace(fmin, fmax, num=8)  # smaller grid for speed
+
+    # --- compute wPLI per epoch ---
     con = spectral_connectivity_time(
-        data=epochs.get_data(),             # (n_epochs, n_channels, n_times)
-        freqs=freqs,
-        method="wpli",                      # wPLI (dwPLI not supported in this API)
+        data=epochs.get_data(),     # (n_epochs, n_channels, n_times)
+        method="wpli",
         mode="multitaper",
-        average=False,                      # keep epoch-wise estimates
+        freqs=freqs,
+        sfreq=sfreq,
         fmin=fmin,
         fmax=fmax,
-        faverage=True,                      # average across freqs within band
-        sfreq=sfreq,
+        faverage=False,             # keep per-frequency data
+        average=False,              # keep per-epoch data
         n_cycles=n_cycles,
-        n_jobs=-1,                          # use all available cores
+        n_jobs=-1,
         verbose="error",
     )
 
-    # --- extract dense matrices and clean up ---
-    con_data = con.get_data(output="dense")   # (n_epochs, n_channels, n_channels, n_freqs)
-    con_data = np.nanmean(con_data, axis=-1)  # average over small freq grid (optional)
+    # --- extract dense matrices ---
+    con_data = con.get_data(output="dense")  # (n_epochs, n_channels, n_channels, n_freqs)
 
-    # --- zero diagonals (self-connections) ---
+    # --- average within this band only ---
+    con_data = np.nanmean(con_data, axis=-1)  # average across freqs inside [fmin, fmax]
+
+    # --- clean up ---
+    con_data = np.nan_to_num(con_data, nan=0.0, posinf=0.0, neginf=0.0)
     for i in range(con_data.shape[0]):
         np.fill_diagonal(con_data[i], 0)
-
-    # --- replace NaNs with zeros to keep graph metrics stable ---
-    con_data = np.nan_to_num(con_data, nan=0.0, posinf=0.0, neginf=0.0)
 
     return con_data
