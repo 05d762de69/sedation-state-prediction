@@ -18,9 +18,9 @@ from tqdm import tqdm
 import sys
 from connectivity import compute_wpli_per_epoch
 
-# ---------------- CLI ARGUMENTS ----------------
+#  CLI ARGUMENTS 
 if len(sys.argv) < 2:
-    print("Usage: python 01_compute_connectivity.py /path/to/folder_with_set_files")
+    print("Usage: python compute_connectivity.py /path/to/folder_with_set_files")
     sys.exit(1)
 
 DATA_DIR = Path(sys.argv[1]).resolve()
@@ -29,7 +29,7 @@ if not DATA_DIR.exists():
 
 print(f"📂 Using EEG data from: {DATA_DIR}")
 
-# ---------------- CONFIGURATION ----------------
+#  CONFIGURATION 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = PROJECT_ROOT / "data/data_derivatives/manifests/manifest.csv"
 OUTPUT_DIR = PROJECT_ROOT / "data/data_derivatives/connectivity_matrices"
