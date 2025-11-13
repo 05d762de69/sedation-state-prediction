@@ -16,7 +16,6 @@ import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
 import sys
-import os
 from connectivity import compute_wpli_per_epoch
 
 # ---------------- CLI ARGUMENTS ----------------
@@ -53,11 +52,14 @@ print(f"Loaded manifest with {len(manifest)} entries.")
 for idx in tqdm(range(len(manifest)), desc="Subjects"):
     row = manifest.iloc[idx]
     label = row["SedationLabel"]
+
+    # Skip recovery states
     if label == "Recovery":
         continue
 
-    # Resolve full path to .set file relative to provided DATA_DIR
-    set_path = DATA_DIR / Path(row["BaseName"]).with_suffix(".set")
+    # Resolve path from project root (NOT DATA_DIR)
+    set_path = (PROJECT_ROOT / row["SetPath"]).resolve()
+
     if not set_path.exists():
         print(f"⚠️ Missing file: {set_path}")
         continue
@@ -70,10 +72,12 @@ for idx in tqdm(range(len(manifest)), desc="Subjects"):
 
     # --- Compute wPLI for each frequency band ---
     for band, (fmin, fmax) in FREQ_BANDS.items():
+
         save_path = OUTPUT_DIR / f"{row['Subject']}_{label}_{band}_wpli.npy"
 
+        # Skip if already computed
         if save_path.exists():
-            continue  # Skip existing computations
+            continue
 
         try:
             con_matrices = compute_wpli_per_epoch(epochs, fmin, fmax)
