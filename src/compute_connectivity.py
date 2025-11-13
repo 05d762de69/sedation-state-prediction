@@ -58,7 +58,7 @@ for idx in tqdm(range(len(manifest)), desc="Subjects"):
         continue
 
     # Resolve path from project root (NOT DATA_DIR)
-    set_path = (PROJECT_ROOT / row["SetPath"]).resolve()
+    set_path = (DATA_DIR / Path(row["SetPath"]).name).resolve()
 
     if not set_path.exists():
         print(f"⚠️ Missing file: {set_path}")
@@ -85,5 +85,6 @@ for idx in tqdm(range(len(manifest)), desc="Subjects"):
         except Exception as e:
             print(f"Error in {set_path.name} ({band}): {type(e).__name__}: {e}")
             continue
+
 
 print("\n✅ Connectivity matrices computed and saved.")
