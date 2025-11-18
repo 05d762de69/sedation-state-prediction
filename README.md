@@ -4,8 +4,8 @@ Machine-learning pipeline for predicting sedation states (responsiveness in earl
 
 ## Overview
 
-This project explores how network topology metrics extracted from EEG connectivity (dwPLI) relate to consciousness under propofol sedation. By leveraging graph-theoretical measures, we train machine-learning models to infer sedation states beyond descriptive analysis.
-This project reuses the open-access EEG dataset from [Chennu (2016)](https://doi.org/10.1371/journal.pcbi.1004669) and extends their graph-theoretical analysis of sedation-related connectivity changes using additional machine learning approaches.
+This project investigates whether network topology metrics derived from EEG connectivity can predict sedation depth during propofol anesthesia.
+This project reuses the open-access EEG dataset from [Chennu (2016)](https://doi.org/10.1371/journal.pcbi.1004669) and extends their graph-theoretical analysis of sedation-related connectivity changes by applying machine-learning models (Random Forests and Convolutional Neural Networks (CNNs)) to graph-theoretical features of large-scale brain networks.
 
 ## Data
 
@@ -18,7 +18,9 @@ Derived features (dwPLI matrices, graph metrics) are generated via scripts in `s
 
 ### Feature Extraction
 
-EEG epochs were processed to compute connectivity using the debiased weighted Phase Lag Index (dwPLI) across five canonical frequency bands (δ = 1–4 Hz, θ = 4–8 Hz, α = 8–13 Hz, β = 13–30 Hz, γ = 30–45 Hz).
+EEG epochs were processed to compute connectivity using the weighted Phase Lag Index (wPLI) across five canonical frequency bands (δ = 1–4 Hz, θ = 4–8 Hz, α = 8–13 Hz, β = 13–30 Hz, γ = 30–45 Hz).
+All connectivity and graph-theoretical computations were executed on the UNSW Katana high-performance computing cluster, using PBS batch scripts and the `compute_graphmetrics.py` pipeline.
+
 For each subject × sedation level × band, the following graph-theoretical features were extracted from the weighted connectivity matrices:
 
 | Metric | Description |
@@ -32,36 +34,32 @@ For each subject × sedation level × band, the following graph-theoretical feat
 | **participation_coefficient** | Extent of cross-module connectivity. |
 | **small_worldness** | Ratio of normalized clustering to normalized path length vs. random graphs. |
 
+These metrics quantify large-scale network segregation, integration, and modular organization.
+
 ### Feature Transformation
 
-Cross-band ratio computation
-For each subject and sedation level, ratios were calculated between EEG bands (θ/α, θ/β, α/β, δ/α) for every feature, e.g.:
-mean_degree_theta_alpha_ratio, clustering_alpha_beta_ratio, etc.
-→ Captures spectral redistribution of network topology across frequency bands.
-
-Within-subject Δ-normalization
-After computing ratios, all features (ratios and absolute metrics) were normalized per subject and per band relative to the subject’s baseline state:
+After downloading the HPC-generated outputs, features were curated and transformed in a dedicated feature-processing notebook. Graph metrics were merged with propofol plasma concentration and behavioral performance (reaction time and accuracy). Metrics were then normalized within-subject and Δ-transformed relative to each subject’s own baseline, removing inter-individual differences in absolute connectivity while isolating sedation-related changes:
 
 $\delta f = \frac{(f_{level} − f_{baseline})}{f_{baseline}}$
 
-→ Removes inter-individual scale differences, isolating condition-specific changes.
 
 ### Normalization and Data Curation
 
-Δ-normalized features were concatenated with their baseline-independent ratio features.
-The “Recovery” state (SedationLevel = 4) was excluded due to its transitional nature.
-Final dataset: per-subject × sedation-level entries containing both normalized graph metrics and cross-band ratios.
+The final dataset contained both raw graph metrics and Δ-normalized features, aggregated across frequency bands, and restricted to the sedation levels Baseline (1), Mild (2), and Moderate (3). The Recovery state was excluded due to its transitional physiological profile.
 
-| Step | Description |
-|------|--------------|
-| **Target variable** | `SedationLevel` (1 = Baseline, 2 = Mild, 3 = Moderate) |
-| **Split strategy** | `GroupShuffleSplit` ensuring subjects are disjoint across train/test |
-| **Feature set** | Ratio features (`*_ratio`) + Δ-normalized metrics |
-| **Preprocessing** | Standard scaling and PCA (retain 95 % variance) |
-| **Model** | RandomForestClassifier (PCA → RF pipeline) |
-| **Hyperparameter tuning** | Group-aware GridSearchCV over `n_estimators`, `max_depth`, `max_features`, and `min_samples_leaf` |
-| **Best parameters** | `max_depth = 3`, `max_features = 0.4`, `min_samples_leaf = 5`, `n_estimators = 200` |
-| **Performance** | Group-CV accuracy ≈ 0.65 (chance ≈ 0.33) |
+### Model Training
+
+Machine-learning models were trained to classify the three sedation levels. A Random Forest (RF) classifier was trained using a preprocessing pipeline that included standard scaling and PCA (retaining 90–99% variance). Hyperparameters (e.g., max_depth, n_estimators, max_features, min_samples_leaf) were tuned using group-aware GridSearchCV, ensuring that subjects were strictly segregated across folds.
+
+In parallel, a 1D Convolutional Neural Network (CNN) was trained on reshaped feature vectors (N × F × 1), with convolutional layers, batch normalization, dropout, and dense layers. A structured hyperparameter search explored convolutional filter counts, kernel sizes, dropout probabilities, dense layer widths, and learning rates.
+
+Both model families were evaluated using 5-fold GroupKFold cross-validation, preventing subject leakage and ensuring subject-independent generalization. Model performance was compared using fold-wise accuracy and confusion matrices, and statistical differences were assessed using a Wilcoxon signed-rank test.
+Although the CNN (M ≈ .72) numerically outperformed the RF (M ≈ .68), the difference was not statistically significant (p = .50). 
+
+>[!important]
+>Importantly, both models achieved accuracies well above the 3-class chance level (.33), demonstrating that EEG-derived graph metrics contain meaningful information about sedation depth.
+
+Cross-validation scores for both models were saved (rf_cv_scores.npy, cnn_cv_scores.npy) to support reproducible visualization and analysis.
 
 <p align="center">
   <img src="figures/pipeline.png" alt="Pipeline flowchart" width="50%">
