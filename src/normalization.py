@@ -48,3 +48,38 @@ def normalize_within_subject(df, baseline_label="Baseline", suffix="_delta"):
             norm_records.append(new_row)
 
     return pd.DataFrame(norm_records)
+
+
+def aggregate_mean_per_state(df, features=None):
+    """
+    Compute mean graph metrics per Subject × SedationLabel × Band.
+    Works on epoch-level data and returns state-level aggregated table.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Must contain columns: Subject, SedationLabel, Band
+        and graph metric feature columns.
+    features : list or None
+        List of metric names to aggregate. If None, auto-detects.
+
+    Returns
+    -------
+    pd.DataFrame
+        One row per subject × state × band with mean metrics.
+    """
+
+    # Identify feature columns
+    if features is None:
+        exclude = ["Subject", "SedationLabel", "SedationLevel", "Band", "Epoch"]
+        features = [col for col in df.columns if col not in exclude]
+
+    # Aggregate
+    df_mean = (
+        df.groupby(["Subject", "SedationLabel", "Band"])[features]
+        .mean()
+        .reset_index()
+    )
+
+    return df_mean
+

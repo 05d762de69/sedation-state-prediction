@@ -5,7 +5,7 @@ def compute_band_ratios(df, features=None, output_path=None):
 
     if features is None:
         features = [
-            'mean_in_degree', 'mean_out_degree', 'clustering', 
+            'mean_strength', 'clustering', 
             'path_length', 'global_efficiency', 'local_efficiency', 
             'modularity', 'participation_coefficient', 'small_worldness'
         ]
@@ -17,7 +17,7 @@ def compute_band_ratios(df, features=None, output_path=None):
         ('delta', 'alpha')
     ]
 
-    # --- Step 1: average across epochs but keep bands distinct ---
+    # average across epochs but keep bands distinct 
     df_agg = (
         df.groupby(['Subject', 'SedationLevel', 'Band'])[features]
         .mean()
