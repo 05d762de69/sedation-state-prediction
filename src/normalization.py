@@ -5,22 +5,6 @@ def normalize_within_subject(df, baseline_label="Baseline", suffix="_delta"):
     """
     Compute within-subject, within-band normalization of graph metrics.
     Each feature is expressed as a relative change from the subject's baseline.
-
-    Δf = (f_level - f_baseline) / f_baseline
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Must contain ['Subject', 'SedationLabel', 'Band', ...features...].
-    baseline_label : str, default='Baseline'
-        Label identifying the baseline condition.
-    suffix : str, default='_delta'
-        Suffix appended to normalized feature columns.
-
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with normalized features and original identifiers.
     """
     df_norm = df.copy()
     
@@ -52,21 +36,8 @@ def normalize_within_subject(df, baseline_label="Baseline", suffix="_delta"):
 
 def aggregate_mean_per_state(df, features=None):
     """
-    Compute mean graph metrics per Subject × SedationLabel × Band.
+    Compute mean graph metrics per Subject SedationLabel Band.
     Works on epoch-level data and returns state-level aggregated table.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Must contain columns: Subject, SedationLabel, Band
-        and graph metric feature columns.
-    features : list or None
-        List of metric names to aggregate. If None, auto-detects.
-
-    Returns
-    -------
-    pd.DataFrame
-        One row per subject × state × band with mean metrics.
     """
 
     # Identify feature columns

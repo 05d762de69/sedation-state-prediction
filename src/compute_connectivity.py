@@ -44,11 +44,10 @@ FREQ_BANDS = {
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# ---------------- LOAD MANIFEST ----------------
+#  LOAD MANIFEST 
 manifest = pd.read_csv(MANIFEST_PATH)
 print(f"Loaded manifest with {len(manifest)} entries.")
 
-# ------------------------------------------------
 for idx in tqdm(range(len(manifest)), desc="Subjects"):
     row = manifest.iloc[idx]
     label = row["SedationLabel"]
@@ -57,20 +56,20 @@ for idx in tqdm(range(len(manifest)), desc="Subjects"):
     if label == "Recovery":
         continue
 
-    # Resolve path from project root (NOT DATA_DIR)
+    # Resolve path from project root
     set_path = (DATA_DIR / Path(row["SetPath"]).name).resolve()
 
     if not set_path.exists():
-        print(f"⚠️ Missing file: {set_path}")
+        print(f"Missing file: {set_path}")
         continue
 
     try:
         epochs = mne.io.read_epochs_eeglab(set_path, verbose="error")
     except Exception as e:
-        print(f"❌ Could not load {set_path.name}: {e}")
+        print(f"Could not load {set_path.name}: {e}")
         continue
 
-    # --- Compute wPLI for each frequency band ---
+    #  Compute wPLI for each frequency band 
     for band, (fmin, fmax) in FREQ_BANDS.items():
 
         save_path = OUTPUT_DIR / f"{row['Subject']}_{label}_{band}_wpli.npy"
@@ -85,6 +84,3 @@ for idx in tqdm(range(len(manifest)), desc="Subjects"):
         except Exception as e:
             print(f"Error in {set_path.name} ({band}): {type(e).__name__}: {e}")
             continue
-
-
-print("\n✅ Connectivity matrices computed and saved.")

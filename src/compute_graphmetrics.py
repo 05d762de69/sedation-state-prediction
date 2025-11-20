@@ -28,7 +28,7 @@ records = []
 
 
 
-# Helper (must be defined top-level for joblib pickling)
+# Helper
 
 def compute_one_epoch(ep_idx, con_matrix, row, band):
     """Compute one epoch worth of graph metrics."""
@@ -49,7 +49,6 @@ def compute_one_epoch(ep_idx, con_matrix, row, band):
         "Correct": row["Correct"],
     }
 
-# MAIN LOOP 
 for idx in range(len(manifest)):
     row = manifest.iloc[idx]
     label = row["SedationLabel"]
@@ -85,4 +84,3 @@ for idx in range(len(manifest)):
 
 df = pd.DataFrame(records)
 df.to_csv(OUTPUT_PATH, index=False)
-print(f"\n✅ Graph metrics saved to: {OUTPUT_PATH}\n")

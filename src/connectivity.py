@@ -32,17 +32,16 @@ def compute_wpli_per_epoch(epochs, fmin, fmax, n_cycles=7):
     Returns array of shape (n_epochs, n_channels, n_channels).
     """
 
-    # --- ensure stable environment for parallelism ---
+    #  ensure stable environment for parallelism 
     mne.set_config("MNE_MEMMAP_MIN_SIZE", "10M", set_env=True)
     mne.set_config("MNE_CACHE_DIR", os.path.expanduser("~/Library/Caches/mne_cache"), set_env=True)
     os.environ["OMP_NUM_THREADS"] = "1"
 
     sfreq = epochs.info["sfreq"]
 
-    # --- define frequency range explicitly for this band ---
-    freqs = np.linspace(fmin, fmax, num=8)  # smaller grid for speed
+    freqs = np.linspace(fmin, fmax, num=8) 
 
-    # --- compute wPLI per epoch ---
+    #  compute wPLI per epoch 
     con = spectral_connectivity_time(
         data=epochs.get_data(),     # (n_epochs, n_channels, n_times)
         method="wpli",
@@ -51,20 +50,19 @@ def compute_wpli_per_epoch(epochs, fmin, fmax, n_cycles=7):
         sfreq=sfreq,
         fmin=fmin,
         fmax=fmax,
-        faverage=False,             # keep per-frequency data
-        average=False,              # keep per-epoch data
+        faverage=False,            
+        average=False,              
         n_cycles=n_cycles,
         n_jobs=-1,
         verbose="error",
     )
 
-    # --- extract dense matrices ---
+    #  extract dense matrices 
     con_data = con.get_data(output="dense")  # (n_epochs, n_channels, n_channels, n_freqs)
 
-    # --- average within this band only ---
-    con_data = np.nanmean(con_data, axis=-1)  # average across freqs inside [fmin, fmax]
+    #  average within this band only 
+    con_data = np.nanmean(con_data, axis=-1) 
 
-    # --- clean up ---
     con_data = np.nan_to_num(con_data, nan=0.0, posinf=0.0, neginf=0.0)
     for i in range(con_data.shape[0]):
         np.fill_diagonal(con_data[i], 0)

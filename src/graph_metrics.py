@@ -118,7 +118,7 @@ def compute_graph_metrics_epochs(con_matrix, n_rand=3, eps=1e-5):
     using brainconn (FIU version) + networkx fallback for small-worldness.
     """
 
-    # --- 1. Clean & symmetrize ---
+    # Clean & symmetrize 
     W = np.nan_to_num(con_matrix, nan=0.0)
     W[W < 0] = 0.0
     np.fill_diagonal(W, 0)
@@ -127,29 +127,29 @@ def compute_graph_metrics_epochs(con_matrix, n_rand=3, eps=1e-5):
     n_nodes = W.shape[0]
     directed = not np.allclose(W, W.T, atol=1e-10)
 
-    # --- 2. Mean strength (weighted degree) ---
+    #  Mean strength (weighted degree)
     total_strength = np.sum(W, axis=1)
     mean_strength = np.mean(total_strength)
 
-    # --- 3. Clustering ---
+    #  Clustering 
     clustering = np.nanmean(clustering_coef_wd(W))
 
-    # --- 4. Path length ---
+    #  Path length 
     D = 1.0 / (W + eps)
     D[W == 0] = np.inf
     path_length = safe_charpath(D, include_diagonal=False, include_infinite=False)
 
-    # --- 5. Efficiency ---
+    #  Efficiency 
     global_eff = efficiency_wei(W, local=False)
     local_eff = efficiency_wei(W, local=True)
 
-    # --- 6. Modularity (undirected Louvain) ---
+    # Modularity (undirected Louvain)
     try:
         Ci, Q = modularity_louvain_und(W)
     except Exception:
         Ci, Q = np.full(W.shape[0], np.nan), np.nan
 
-    # --- 7. Participation coefficient (undirected) ---
+    # Participation coefficient (undirected)
     participation = np.zeros(n_nodes)
     for i in range(n_nodes):
         if total_strength[i] == 0:
@@ -161,7 +161,7 @@ def compute_graph_metrics_epochs(con_matrix, n_rand=3, eps=1e-5):
         participation[i] = 1 - participation[i]
     participation_coeff = np.mean(participation)
 
-    # --- 8. Random graph comparison (small-worldness) ---
+    # Random graph comparison (small-worldness)
     n_edges = np.count_nonzero(W)
     weights = W[W > 0]
     C_rand_list, L_rand_list = [], []
@@ -186,13 +186,13 @@ def compute_graph_metrics_epochs(con_matrix, n_rand=3, eps=1e-5):
         else np.nan
     )
 
-    # --- 9. Scalars only ---
+    # Scalars only 
     global_eff = np.nanmean(global_eff)
     local_eff = np.nanmean(local_eff)
     clustering = np.nanmean(clustering)
     participation_coeff = np.nanmean(participation_coeff)
 
-    # --- 10. Return summary ---
+    #  Return summary
     return {
         "mean_strength": mean_strength,
         "clustering": clustering,
